@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0F1117" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="হালখাতা" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Tiro+Bangla&display=swap" rel="stylesheet" />
+  <title>হালখাতা</title>
+  <style>
+    :root {
+      --bg:#0F1117; --card:#1A1D27; --card2:#21253A;
+      --accent:#F97316; --accentSoft:#F9731620;
+      --green:#22C55E; --greenSoft:#22C55E20;
+      --red:#F43F5E; --redSoft:#F43F5E20;
+      --amber:#F59E0B; --amberSoft:#F59E0B20;
+      --blue:#38BDF8; --blueSoft:#38BDF820;
+      --purple:#A78BFA; --purpleSoft:#A78BFA20;
+      --text:#F1F0ED; --muted:#6B7080; --border:#252836;
+      --safe-top:env(safe-area-inset-top,0px);
+      --safe-bottom:env(safe-area-inset-bottom,0px);
+    }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    html,body{height:100%;overflow:hidden}
+    body{background:var(--bg);color:var(--text);font-family:'Hind Siliguri',sans-serif;font-size:14px;overscroll-behavior:none}
+    #app{display:flex;flex-direction:column;height:100%;max-width:480px;margin:0 auto;position:relative}
+    #topbar{background:var(--card);border-bottom:1px solid var(--border);padding:calc(var(--safe-top) + 12px) 16px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:10}
+    .app-name{font-family:'Tiro Bangla',serif;color:var(--accent);font-size:22px;font-weight:700;line-height:1}
+    .screen-title{color:var(--text);font-size:12px;font-weight:600;margin-top:1px;opacity:0.7}
+    .balance-pill{background:var(--accentSoft);border:1px solid var(--accent);border-radius:20px;padding:5px 12px;color:var(--accent);font-weight:700;font-size:13px}
+    #sync-status{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;margin-top:2px}
+    #content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 0}
+    #content::-webkit-scrollbar{display:none}
+    #bottomnav{background:var(--card);border-top:1px solid var(--border);display:flex;padding:6px 0 calc(var(--safe-bottom) + 6px);flex-shrink:0}
+    .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 2px;background:none;border:none;cursor:pointer;color:var(--muted);font-family:inherit;transition:color .15s}
+    .nav-btn.active{color:var(--accent)}
+    .nav-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;transition:background .15s}
+    .nav-btn.active .nav-icon{background:var(--accentSoft)}
+    .nav-label{font-size:9px;font-weight:700;letter-spacing:.3px}
+    .card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:12px;border:1px solid var(--border)}
+    .hero{background:linear-gradient(135deg,var(--accent) 0%,#EA580C 100%);border-radius:20px;padding:22px 20px;margin-bottom:12px;position:relative;overflow:hidden}
+    .hero::after{content:'';position:absolute;right:-30px;top:-30px;width:140px;height:140px;border-radius:50%;background:#ffffff10}
+    .hero-label{color:#ffffffbb;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+    .hero-val{color:#fff;font-size:36px;font-weight:900;line-height:1.1;margin:4px 0}
+    .hero-sub{color:#ffffffaa;font-size:11px}
+    .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+    .tile{background:var(--card);border-radius:14px;padding:14px 12px;border:1px solid var(--border)}
+    .tile-emoji{font-size:20px;margin-bottom:6px}
+    .tile-val{font-weight:900;font-size:18px}
+    .tile-label{color:var(--muted);font-size:11px;margin-top:3px;font-weight:600}
+    .badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700}
+    .row{display:flex;justify-content:space-between;align-items:center}
+    .list-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-top:1px solid var(--border)}
+    .bar-bg{background:var(--border);border-radius:4px;height:6px;margin-top:5px}
+    .bar-fill{height:6px;border-radius:4px;transition:width .4s ease}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:12px;border:none;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;color:#fff;transition:opacity .15s,transform .1s;white-space:nowrap}
+    .btn:active{opacity:.85;transform:scale(.97)}
+    .btn-sm{padding:7px 13px;border-radius:9px;font-size:12px}
+    .chips{display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;margin-bottom:6px}
+    .chips::-webkit-scrollbar{display:none}
+    .chip{padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s}
+    .chip.active{color:#fff;border-color:transparent}
+    .t-muted{color:var(--muted);font-size:12px}
+    .t-bold{font-weight:700}
+    .t-green{color:var(--green)}
+    .t-red{color:var(--red)}
+    .t-amber{color:var(--amber)}
+    .t-accent{color:var(--accent)}
+    .empty{text-align:center;padding:50px 20px}
+    .empty-emoji{font-size:44px;margin-bottom:10px}
+    .empty-text{color:var(--muted);font-size:14px}
+    .overlay{position:fixed;inset:0;background:#000000CC;z-index:100;opacity:0;transition:opacity .25s;pointer-events:none}
+    .overlay.show{opacity:1;pointer-events:all}
+    .sheet{position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);width:100%;max-width:480px;background:var(--card);border-radius:22px 22px 0 0;padding:16px 18px calc(var(--safe-bottom) + 24px);z-index:101;max-height:88vh;overflow-y:auto;transition:transform .28s cubic-bezier(.32,.72,0,1)}
+    .sheet.show{transform:translateX(-50%) translateY(0)}
+    .sheet::-webkit-scrollbar{display:none}
+    .sheet-handle{width:38px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px}
+    .sheet-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+    .sheet-title{font-weight:800;font-size:17px;color:var(--text)}
+    .close-btn{background:var(--card2);border:none;border-radius:8px;padding:5px 10px;cursor:pointer;color:var(--muted);font-size:16px}
+    .form-group{margin-bottom:13px}
+    .form-label{color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:5px;display:block}
+    .form-input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:10px 13px;color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:border-color .15s}
+    .form-input:focus{border-color:var(--accent)}
+    .form-input::placeholder{color:var(--muted)}
+    select.form-input option{background:var(--card)}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+    .cal-day-hdr{text-align:center;color:var(--muted);font-size:10px;font-weight:700;padding:4px 0}
+    .cal-day{aspect-ratio:1;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:5px;border:1px solid transparent}
+    .cal-day.today{background:var(--accent);border-color:var(--accent)}
+    .cal-day.has-event{background:var(--card2)}
+    .cal-day-num{font-size:12px;font-weight:600;color:var(--text)}
+    .cal-day.today .cal-day-num{color:#fff;font-weight:900}
+    .cal-dots{display:flex;gap:2px;margin-top:2px}
+    .cal-dot{width:4px;height:4px;border-radius:50%}
+    .proj-stats{display:flex;gap:8px;margin-top:12px}
+    .proj-stat{flex:1;border-radius:10px;padding:10px}
+    /* action buttons row */
+    .action-row{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+    .act-btn{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:4px;padding:6px 4px;border-radius:8px;border:none;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;transition:opacity .15s}
+    .act-btn:active{opacity:.7}
+    /* Repeat badge */
+    .repeat-badge{display:inline-flex;align-items:center;gap:3px;background:var(--purpleSoft);color:var(--purple);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700}
+    /* Toggle switch */
+    .toggle-wrap{display:flex;align-items:center;justify-content:space-between;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:10px 13px;margin-bottom:13px}
+    .toggle-label{color:var(--text);font-size:14px;font-weight:600}
+    .toggle{position:relative;width:44px;height:24px;flex-shrink:0}
+    .toggle input{opacity:0;width:0;height:0}
+    .toggle-slider{position:absolute;inset:0;background:var(--border);border-radius:24px;transition:.3s;cursor:pointer}
+    .toggle-slider:before{content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+    .toggle input:checked+.toggle-slider{background:var(--purple)}
+    .toggle input:checked+.toggle-slider:before{transform:translateX(20px)}
+    /* Loader */
+    #loader{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+    .spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .screen{animation:fadeIn .2s ease}
+    #toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:9px 18px;border-radius:20px;font-size:13px;font-weight:600;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+    #toast.show{opacity:1}
+  </style>
+</head>
+<body>
+<div id="loader">
+  <div style="font-family:'Tiro Bangla',serif;color:var(--accent);font-size:32px">হালখাতা</div>
+  <div class="spinner"></div>
+  <div style="color:var(--muted);font-size:12px" id="loader-text">Firebase এর সাথে যুক্ত হচ্ছে...</div>
+</div>
+
+<div id="app" style="display:none">
+  <div id="topbar">
+    <div>
+      <div class="app-name">হালখাতা</div>
+      <div class="screen-title" id="screen-title">সারসংক্ষেপ</div>
+      <div id="sync-status" style="color:var(--amber);background:var(--amberSoft)">● সংযুক্ত হচ্ছে...</div>
+    </div>
+    <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <button onclick="openCatManager()" style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:5px 9px;cursor:pointer;font-size:14px" title="ক্যাটাগরি ম্যানেজ করুন">⚙️</button>
+        <div class="balance-pill" id="balance-pill">৳০</div>
+      </div>
+      <div style="color:var(--muted);font-size:10px" id="user-email"></div>
+    </div>
+  </div>
+  <div id="content"></div>
+  <nav id="bottomnav">
+    <button class="nav-btn active" data-tab="dashboard" onclick="switchTab('dashboard')"><div class="nav-icon">🏠</div><span class="nav-label">Overview</span></button>
+    <button class="nav-btn" data-tab="income" onclick="switchTab('income')"><div class="nav-icon">💵</div><span class="nav-label">আয়</span></button>
+    <button class="nav-btn" data-tab="expense" onclick="switchTab('expense')"><div class="nav-icon">💸</div><span class="nav-label">খরচ</span></button>
+    <button class="nav-btn" data-tab="calendar" onclick="switchTab('calendar')"><div class="nav-icon">📅</div><span class="nav-label">ক্যালেন্ডার</span></button>
+    <button class="nav-btn" data-tab="savings" onclick="switchTab('savings')"><div class="nav-icon">🏦</div><span class="nav-label">সঞ্চয়</span></button>
+    <button class="nav-btn" data-tab="loan" onclick="switchTab('loan')"><div class="nav-icon">🤝</div><span class="nav-label">ঋণ</span></button>
+    <button class="nav-btn" data-tab="project" onclick="switchTab('project')"><div class="nav-icon">📁</div><span class="nav-label">প্রজেক্ট</span></button>
+  </nav>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <span class="sheet-title" id="sheet-title"></span>
+    <button class="close-btn" onclick="closeSheet()">✕</button>
+  </div>
+  <div id="sheet-body"></div>
+</div>
+<div id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, doc, onSnapshot, addDoc, deleteDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCx17NIlaI-ul9DwszhQixP7D9vIkyV27c",
+  authDomain: "halkhata-4e186.firebaseapp.com",
+  projectId: "halkhata-4e186",
+  storageBucket: "halkhata-4e186.firebasestorage.app",
+  messagingSenderId: "139609479681",
+  appId: "1:139609479681:web:d30703ae4cbdc8538b3e00",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+// ── Constants ──────────────────────────────────────────────────────
+let CATS = ['Loan','Bill','Bazar','DPS','Gari','Education','Other'];
+const STATUS = ['Done','Scheduled','TBD'];
+const DEFAULT_CAT_COLORS = ['#F43F5E','#F59E0B','#22C55E','#A78BFA','#38BDF8','#EC4899','#6B7080','#14B8A6','#8B5CF6','#F97316','#06B6D4','#84CC16'];
+let CAT_COLORS = {Loan:'#F43F5E',Bill:'#F59E0B',Bazar:'#22C55E',DPS:'#A78BFA',Gari:'#38BDF8',Education:'#EC4899',Other:'#6B7080'};
+
+function getCatColor(cat) {
+  if (CAT_COLORS[cat]) return CAT_COLORS[cat];
+  const idx = CATS.indexOf(cat) % DEFAULT_CAT_COLORS.length;
+  return DEFAULT_CAT_COLORS[Math.max(0, idx)];
+}
+const STATUS_COLORS = {Done:'#22C55E',Scheduled:'#F59E0B',TBD:'#6B7080'};
+const MONTHS = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+const fmt = n => '৳' + Number(n||0).toLocaleString('en-IN');
+const today = () => new Date().toISOString().split('T')[0];
+const uid = () => Math.random().toString(36).slice(2,9);
+
+// ── State ─────────────────────────────────────────────────────────
+let DATA = {incomes:[],expenses:[],savings:[],loans:[],projects:[]};
+let USER_ID = null;
+let currentTab = 'dashboard';
+let currentProjectId = null;
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let expFilterCat = 'All';
+let expFilterStatus = 'All';
+let unsubs = [];
+
+// ── Toast ─────────────────────────────────────────────────────────
+function toast(msg, dur=2200) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+// ── Firestore ─────────────────────────────────────────────────────
+const col = name => collection(db,'users',USER_ID,name);
+const dref = (name,id) => doc(db,'users',USER_ID,name,id);
+
+async function fsAdd(colName, data) {
+  try { return (await addDoc(col(colName),{...data,_ts:Date.now()})).id; }
+  catch(e) { toast('❌ সেভ হয়নি'); console.error(e); }
+}
+async function fsDel(colName, id) {
+  try { await deleteDoc(dref(colName,id)); }
+  catch(e) { toast('❌ মুছা হয়নি'); }
+}
+async function fsUpdate(colName, id, data) {
+  try { await updateDoc(dref(colName,id),{...data,_ts:Date.now()}); }
+  catch(e) { toast('❌ আপডেট হয়নি'); }
+}
+
+// ── Repeat job — runs on load, adds this month's entries if missing ─
+async function processRepeats() {
+  if (!USER_ID) return;
+  const now = new Date();
+  const thisMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+
+  // Income repeats
+  for (const inc of DATA.incomes.filter(i=>i.repeat)) {
+    const day = inc.date ? inc.date.split('-')[2] : '01';
+    const targetDate = `${thisMonth}-${day}`;
+    // Check if already exists for this month
+    const exists = DATA.incomes.some(i => i.date===targetDate && i.repeatParent===inc.id);
+    if (!exists && targetDate !== inc.date) {
+      await fsAdd('incomes', { date:targetDate, amount:inc.amount, notes:inc.notes, repeat:false, repeatParent:inc.id });
+    }
+  }
+
+  // Expense repeats
+  for (const exp of DATA.expenses.filter(e=>e.repeat)) {
+    const day = exp.date ? exp.date.split('-')[2] : '01';
+    const targetDate = `${thisMonth}-${day}`;
+    const exists = DATA.expenses.some(e => e.date===targetDate && e.repeatParent===exp.id);
+    if (!exists && targetDate !== exp.date) {
+      await fsAdd('expenses', { date:targetDate, amount:exp.amount, category:exp.category, status:'Scheduled', notes:exp.notes, repeat:false, repeatParent:exp.id });
+      if (exp.category==='DPS') {
+        const exists2 = DATA.savings.some(s=>s.month===thisMonth&&s.repeatParent===exp.id);
+        if (!exists2) await fsAdd('savings',{month:thisMonth,amount:exp.amount,source:'DPS',notes:exp.notes,repeatParent:exp.id});
+      }
+    }
+  }
+}
+
+// ── Listeners ─────────────────────────────────────────────────────
+function startListeners() {
+  unsubs.forEach(u=>u()); unsubs=[];
+
+  // Listen to custom categories from Firestore
+  const catUnsub = onSnapshot(doc(db,'users',USER_ID,'settings','categories'), snap=>{
+    if (snap.exists()) {
+      const d = snap.data();
+      if (d.list && d.list.length > 0) {
+        CATS = d.list;
+        if (d.colors) CAT_COLORS = d.colors;
+      }
+    }
+    render();
+  }, ()=>{});
+  unsubs.push(catUnsub);
+
+  ['incomes','expenses','savings','loans','projects'].forEach(name=>{
+    const unsub = onSnapshot(col(name), snap=>{
+      DATA[name] = snap.docs.map(d=>({id:d.id,...d.data()}));
+      if(name==='incomes'||name==='expenses') updateBalancePill();
+      render();
+    });
+    unsubs.push(unsub);
+  });
+  document.getElementById('sync-status').textContent='● লাইভ সংযুক্ত';
+  document.getElementById('sync-status').style.color='var(--green)';
+  document.getElementById('sync-status').style.background='var(--greenSoft)';
+  setTimeout(processRepeats, 3000);
+}
+
+// ── Save categories to Firestore ─────────────────────────────────
+async function saveCategories() {
+  try {
+    await setDoc(doc(db,'users',USER_ID,'settings','categories'), { list: CATS, colors: CAT_COLORS });
+    toast('✅ ক্যাটাগরি সেভ হয়েছে');
+  } catch(e) { toast('❌ সেভ হয়নি'); console.error(e); }
+}
+
+// ── Auth ──────────────────────────────────────────────────────────
+function showLoginScreen() {
+  document.getElementById('loader').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('content').innerHTML=`
+    <div class="screen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:20px;padding:20px;text-align:center">
+      <div style="font-family:'Tiro Bangla',serif;color:var(--accent);font-size:48px">হালখাতা</div>
+      <div style="color:var(--muted);font-size:14px;line-height:1.6">সব ডিভাইস থেকে আপনার<br>আর্থিক হিসাব দেখুন</div>
+      <button class="btn" style="background:var(--accent);font-size:15px;padding:14px 32px" onclick="window.loginAnon()">🚀 শুরু করুন</button>
+    </div>`;
+}
+
+window.loginAnon = async () => {
+  document.getElementById('loader').style.display='flex';
+  document.getElementById('app').style.display='none';
+  try { await signInAnonymously(auth); }
+  catch(e) { toast('❌ লগইন হয়নি'); document.getElementById('loader').style.display='none'; document.getElementById('app').style.display='flex'; }
+};
+
+onAuthStateChanged(auth, user=>{
+  if(user){
+    USER_ID=user.uid;
+    document.getElementById('user-email').textContent='ID: '+user.uid.slice(0,8)+'...';
+    document.getElementById('loader').style.display='none';
+    document.getElementById('app').style.display='flex';
+    startListeners();
+  } else {
+    USER_ID=null; showLoginScreen();
+  }
+});
+
+// ── Nav ───────────────────────────────────────────────────────────
+const TAB_TITLES={dashboard:'সারসংক্ষেপ',income:'আয়',expense:'খরচ',calendar:'ক্যালেন্ডার',savings:'সঞ্চয়',loan:'ঋণ',project:'প্রজেক্ট'};
+window.switchTab = tab=>{
+  currentTab=tab; currentProjectId=null;
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  document.getElementById('screen-title').textContent=TAB_TITLES[tab];
+  render();
+};
+function updateBalancePill(){
+  const inc=DATA.incomes.reduce((s,i)=>s+Number(i.amount),0);
+  const done=DATA.expenses.filter(e=>e.status==='Done').reduce((s,i)=>s+Number(i.amount),0);
+  document.getElementById('balance-pill').textContent=fmt(inc-done);
+}
+
+// ── Sheet ─────────────────────────────────────────────────────────
+window.openSheet=(title,html)=>{
+  document.getElementById('sheet-title').textContent=title;
+  document.getElementById('sheet-body').innerHTML=html;
+  document.getElementById('overlay').classList.add('show');
+  document.getElementById('sheet').classList.add('show');
+};
+window.closeSheet=()=>{
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('sheet').classList.remove('show');
+};
+
+// ── Render ────────────────────────────────────────────────────────
+function render(){
+  if(!USER_ID) return;
+  const c=document.getElementById('content'); c.scrollTop=0;
+  if(currentTab==='dashboard') c.innerHTML=renderDashboard();
+  else if(currentTab==='income') c.innerHTML=renderIncome();
+  else if(currentTab==='expense') c.innerHTML=renderExpense();
+  else if(currentTab==='calendar') c.innerHTML=renderCalendar();
+  else if(currentTab==='savings') c.innerHTML=renderSavings();
+  else if(currentTab==='loan') c.innerHTML=renderLoan();
+  else if(currentTab==='project') c.innerHTML=currentProjectId?renderProjectDetail():renderProjects();
+}
+
+// ══════════════════════════════════════════════════════════
+// ACTION BUTTONS helper (edit + repeat + status + delete)
+// ══════════════════════════════════════════════════════════
+function incomeActions(i) {
+  return `<div class="action-row">
+    <button class="act-btn" style="background:var(--blueSoft);color:var(--blue)" onclick="editIncome('${i.id}')">✏️ এডিট</button>
+    <button class="act-btn" style="background:${i.repeat?'var(--purple)':'var(--purpleSoft)'};color:${i.repeat?'#fff':'var(--purple)'}" onclick="toggleRepeatIncome('${i.id}',${!!i.repeat})">🔁 ${i.repeat?'Repeat ON':'Repeat'}</button>
+    <button class="act-btn" style="background:var(--redSoft);color:var(--red)" onclick="delIncome('${i.id}')">🗑️ মুছুন</button>
+  </div>`;
+}
+
+function expenseActions(e) {
+  return `<div class="action-row">
+    <button class="act-btn" style="background:var(--greenSoft);color:var(--green)" onclick="toggleExpStatus('${e.id}','${e.status}','${e.category}',${e.amount},'${e.date||''}','${(e.notes||'').replace(/'/g,"\\'")}')">✓ স্ট্যাটাস</button>
+    <button class="act-btn" style="background:var(--blueSoft);color:var(--blue)" onclick="editExpense('${e.id}')">✏️ এডিট</button>
+    <button class="act-btn" style="background:${e.repeat?'var(--purple)':'var(--purpleSoft)'};color:${e.repeat?'#fff':'var(--purple)'}" onclick="toggleRepeatExpense('${e.id}',${!!e.repeat})">🔁 ${e.repeat?'ON':'Repeat'}</button>
+    <button class="act-btn" style="background:var(--redSoft);color:var(--red)" onclick="delExpense('${e.id}')">🗑️</button>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════════════
+function renderDashboard(){
+  const inc=DATA.incomes.reduce((s,i)=>s+Number(i.amount),0);
+  const done=DATA.expenses.filter(e=>e.status==='Done').reduce((s,i)=>s+Number(i.amount),0);
+  const due=DATA.expenses.filter(e=>e.status!=='Done').reduce((s,i)=>s+Number(i.amount),0);
+  const totalExp=DATA.expenses.reduce((s,i)=>s+Number(i.amount),0);
+  const saving=DATA.savings.reduce((s,i)=>s+Number(i.amount),0);
+  const catRows=CATS.map(c=>({c,t:DATA.expenses.filter(e=>e.category===c).reduce((s,i)=>s+Number(i.amount),0)})).filter(x=>x.t>0).sort((a,b)=>b.t-a.t);
+  const recent=[...DATA.expenses].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,5);
+  return `<div class="screen">
+  <div class="hero"><div class="hero-label">মোট ব্যালেন্স</div><div class="hero-val">${fmt(inc-done)}</div><div class="hero-sub">মোট আয় − পরিশোধিত খরচ</div></div>
+  <div class="tiles">
+    <div class="tile"><div class="tile-emoji">💚</div><div class="tile-val t-green">${fmt(inc)}</div><div class="tile-label">মোট আয়</div></div>
+    <div class="tile"><div class="tile-emoji">🔴</div><div class="tile-val t-red">${fmt(totalExp)}</div><div class="tile-label">মোট খরচ</div></div>
+    <div class="tile"><div class="tile-emoji">✅</div><div class="tile-val" style="color:var(--blue)">${fmt(done)}</div><div class="tile-label">পরিশোধিত</div></div>
+    <div class="tile"><div class="tile-emoji">⏳</div><div class="tile-val t-amber">${fmt(due)}</div><div class="tile-label">বাকি আছে</div></div>
+  </div>
+  <div class="card"><div class="row"><span style="font-weight:700">💰 মোট সঞ্চয় (DPS)</span><span class="t-green t-bold" style="font-size:18px">${fmt(saving)}</span></div>
+    ${DATA.savings.length===0?'<p class="t-muted" style="margin-top:8px">এখনো সঞ্চয় নেই</p>':DATA.savings.slice(-3).map(s=>`<div class="list-row"><span class="t-muted">${s.month||''} · ${s.source||''}</span><span class="t-green t-bold">${fmt(s.amount)}</span></div>`).join('')}</div>
+  ${catRows.length>0?`<div class="card"><div style="font-weight:700;margin-bottom:10px">📊 ক্যাটাগরি অনুযায়ী</div>${catRows.map(({c,t})=>`<div style="margin-bottom:10px"><div class="row"><span>${c}</span><span style="color:${getCatColor(c)};font-weight:700">${fmt(t)}</span></div><div class="bar-bg"><div class="bar-fill" style="background:${getCatColor(c)};width:${Math.min(100,(t/totalExp)*100)}%"></div></div></div>`).join('')}</div>`:''}
+  ${recent.length>0?`<div class="card"><div style="font-weight:700;margin-bottom:10px">🕒 সাম্প্রতিক খরচ</div>${recent.map(e=>`<div class="list-row"><div><span class="badge" style="color:${getCatColor(e.category)};background:${getCatColor(e.category)}22">${e.category||''}</span><div class="t-muted" style="margin-top:3px">${e.date||''}</div></div><span style="color:var(--red);font-weight:800">-${fmt(e.amount)}</span></div>`).join('')}</div>`:''}
+  <div style="height:20px"></div></div>`;
+}
+
+// ══════════════════════════════════════════════════════════
+// INCOME
+// ══════════════════════════════════════════════════════════
+function renderIncome(){
+  const total=DATA.incomes.reduce((s,i)=>s+Number(i.amount),0);
+  const sorted=[...DATA.incomes].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  return `<div class="screen">
+  <div class="row" style="margin-bottom:16px">
+    <div><div class="t-muted">মোট আয়</div><div style="color:var(--green);font-size:30px;font-weight:900">${fmt(total)}</div></div>
+    <button class="btn btn-sm" style="background:var(--green)" onclick="openIncomeForm()">+ আয় যোগ</button>
+  </div>
+  ${sorted.length===0?'<div class="empty"><div class="empty-emoji">💵</div><div class="empty-text">কোনো আয় নেই</div></div>':sorted.map(i=>`
+    <div class="card">
+      <div class="row">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <span style="color:var(--green);font-weight:800;font-size:20px">${fmt(i.amount)}</span>
+            ${i.repeat?'<span class="repeat-badge">🔁 মাসিক</span>':''}
+            ${i.repeatParent?'<span class="badge" style="background:var(--purpleSoft);color:var(--purple);font-size:10px">auto</span>':''}
+          </div>
+          <div class="t-muted" style="margin-top:3px">${i.date||''}${i.notes?' · '+i.notes:''}</div>
+        </div>
+      </div>
+      ${incomeActions(i)}
+    </div>`).join('')}
+  <div style="height:80px"></div></div>`;
+}
+
+function incomeFormHtml(v={}) {
+  return `
+    <div class="form-group"><label class="form-label">তারিখ</label><input class="form-input" type="date" id="f-date" value="${v.date||today()}"></div>
+    <div class="form-group"><label class="form-label">পরিমাণ (৳)</label><input class="form-input" type="number" id="f-amount" placeholder="০" inputmode="numeric" value="${v.amount||''}"></div>
+    <div class="form-group"><label class="form-label">নোট</label><input class="form-input" type="text" id="f-notes" placeholder="বেতন / ফ্রিল্যান্স..." value="${v.notes||''}"></div>
+    <div class="toggle-wrap">
+      <span class="toggle-label">🔁 প্রতি মাসে Repeat করবে?</span>
+      <label class="toggle"><input type="checkbox" id="f-repeat" ${v.repeat?'checked':''}><span class="toggle-slider"></span></label>
+    </div>
+    <div style="background:var(--purpleSoft);border-radius:10px;padding:9px 12px;margin-bottom:13px;color:var(--purple);font-size:12px">
+      💡 Repeat চালু করলে প্রতি মাসের একই তারিখে এই আয় স্বয়ংক্রিয়ভাবে যোগ হবে
+    </div>`;
+}
+
+window.openIncomeForm = () => openSheet('আয় যোগ করুন', incomeFormHtml()
+  + `<button class="btn" style="background:var(--green);width:100%;justify-content:center" onclick="saveIncome()">✔ সেভ করুন</button>`);
+
+window.editIncome = id => {
+  const i = DATA.incomes.find(x=>x.id===id);
+  if(!i) return;
+  openSheet('আয় এডিট করুন', incomeFormHtml(i)
+    + `<button class="btn" style="background:var(--blue);width:100%;justify-content:center" onclick="updateIncome('${id}')">✔ আপডেট করুন</button>`);
+};
+
+window.saveIncome = async () => {
+  const amount=document.getElementById('f-amount').value;
+  if(!amount){toast('পরিমাণ দিন');return;}
+  await fsAdd('incomes',{date:document.getElementById('f-date').value,amount:Number(amount),notes:document.getElementById('f-notes').value,repeat:document.getElementById('f-repeat').checked});
+  closeSheet(); toast('✅ আয় সেভ হয়েছে');
+};
+
+window.updateIncome = async id => {
+  const amount=document.getElementById('f-amount').value;
+  if(!amount){toast('পরিমাণ দিন');return;}
+  await fsUpdate('incomes',id,{date:document.getElementById('f-date').value,amount:Number(amount),notes:document.getElementById('f-notes').value,repeat:document.getElementById('f-repeat').checked});
+  closeSheet(); toast('✅ আপডেট হয়েছে');
+};
+
+window.toggleRepeatIncome = async (id, cur) => {
+  await fsUpdate('incomes',id,{repeat:!cur});
+  toast(!cur?'🔁 Repeat চালু হয়েছে':'Repeat বন্ধ হয়েছে');
+};
+
+window.delIncome = async id => {
+  if(!confirm('এই আয় মুছে ফেলবেন?'))return;
+  await fsDel('incomes',id); toast('🗑️ মুছে গেছে');
+};
+
+// ══════════════════════════════════════════════════════════
+// EXPENSE
+// ══════════════════════════════════════════════════════════
+function renderExpense(){
+  const filtered=DATA.expenses
+    .filter(e=>expFilterCat==='All'||e.category===expFilterCat)
+    .filter(e=>expFilterStatus==='All'||e.status===expFilterStatus)
+    .sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const total=filtered.reduce((s,e)=>s+Number(e.amount),0);
+  const statusChips=['All',...STATUS].map(s=>`<button class="chip${expFilterStatus===s?' active':''}" style="${expFilterStatus===s&&s!=='All'?`background:${STATUS_COLORS[s]}`:expFilterStatus===s?'background:var(--accent)':''}" onclick="setExpFilter('status','${s}')">${s}</button>`).join('');
+  const catChips=['All',...CATS].map(c=>`<button class="chip${expFilterCat===c?' active':''}" style="${expFilterCat===c&&c!=='All'?`background:${getCatColor(c)}`:expFilterCat===c?'background:var(--accent)':''}" onclick="setExpFilter('cat','${c}')">${c}</button>`).join('');
+  return `<div class="screen">
+  <div class="row" style="margin-bottom:12px">
+    <div><div class="t-muted">ফিল্টার করা মোট</div><div style="color:var(--red);font-size:28px;font-weight:900">${fmt(total)}</div></div>
+    <button class="btn btn-sm" style="background:var(--accent)" onclick="openExpenseForm()">+ খরচ যোগ</button>
+  </div>
+  <div class="chips">${statusChips}</div>
+  <div class="chips">${catChips}</div>
+  ${filtered.length===0?'<div class="empty"><div class="empty-emoji">💸</div><div class="empty-text">কোনো খরচ নেই</div></div>':filtered.map(e=>`
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="flex:1">
+          <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+            <span class="badge" style="color:${getCatColor(e.category)};background:${getCatColor(e.category)}22">${e.category||''}</span>
+            <span class="badge" style="color:${STATUS_COLORS[e.status]||'#6B7080'};background:${STATUS_COLORS[e.status]||'#6B7080'}22">${e.status||''}</span>
+            ${e.repeat?'<span class="repeat-badge">🔁 মাসিক</span>':''}
+            ${e.repeatParent?'<span class="badge" style="background:var(--purpleSoft);color:var(--purple);font-size:10px">auto</span>':''}
+          </div>
+          <div style="font-weight:800;font-size:18px">${fmt(e.amount)}</div>
+          <div class="t-muted" style="margin-top:3px">${e.date||''}${e.notes?' · '+e.notes:''}</div>
+        </div>
+      </div>
+      ${expenseActions(e)}
+    </div>`).join('')}
+  <div style="height:80px"></div></div>`;
+}
+
+window.setExpFilter=(type,val)=>{if(type==='cat')expFilterCat=val;else expFilterStatus=val;render();};
+
+function expenseFormHtml(v={}) {
+  return `
+    <div class="form-group"><label class="form-label">তারিখ</label><input class="form-input" type="date" id="f-date" value="${v.date||today()}"></div>
+    <div class="form-group"><label class="form-label">পরিমাণ (৳)</label><input class="form-input" type="number" id="f-amount" placeholder="০" inputmode="numeric" value="${v.amount||''}"></div>
+    <div class="form-group"><label class="form-label">ক্যাটাগরি</label>
+      <select class="form-input" id="f-cat">${CATS.map(c=>`<option${v.category===c?' selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label">স্ট্যাটাস</label>
+      <select class="form-input" id="f-status">${STATUS.map(s=>`<option${v.status===s?' selected':''}>${s}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label">নোট</label><input class="form-input" type="text" id="f-notes" placeholder="বিবরণ..." value="${v.notes||''}"></div>
+    <div class="toggle-wrap">
+      <span class="toggle-label">🔁 প্রতি মাসে Repeat করবে?</span>
+      <label class="toggle"><input type="checkbox" id="f-repeat" ${v.repeat?'checked':''}><span class="toggle-slider"></span></label>
+    </div>
+    <div style="background:var(--purpleSoft);border-radius:10px;padding:9px 12px;margin-bottom:13px;color:var(--purple);font-size:12px">
+      💡 Repeat চালু করলে প্রতি মাসের একই তারিখে এই খরচ Scheduled হিসেবে যোগ হবে
+    </div>`;
+}
+
+window.openExpenseForm = () => openSheet('খরচ যোগ করুন', expenseFormHtml()
+  + `<button class="btn" style="background:var(--accent);width:100%;justify-content:center" onclick="saveExpense()">✔ সেভ করুন</button>`);
+
+window.editExpense = id => {
+  const e = DATA.expenses.find(x=>x.id===id);
+  if(!e) return;
+  openSheet('খরচ এডিট করুন', expenseFormHtml(e)
+    + `<button class="btn" style="background:var(--blue);width:100%;justify-content:center" onclick="updateExpense('${id}')">✔ আপডেট করুন</button>`);
+};
+
+window.saveExpense = async () => {
+  const amount=document.getElementById('f-amount').value;
+  const cat=document.getElementById('f-cat').value;
+  const status=document.getElementById('f-status').value;
+  const date=document.getElementById('f-date').value;
+  const notes=document.getElementById('f-notes').value;
+  const repeat=document.getElementById('f-repeat').checked;
+  if(!amount){toast('পরিমাণ দিন');return;}
+  await fsAdd('expenses',{date,amount:Number(amount),category:cat,status,notes,repeat});
+  if(cat==='DPS'&&status==='Done') await fsAdd('savings',{month:date.slice(0,7),amount:Number(amount),source:'DPS',notes});
+  closeSheet(); toast('✅ খরচ সেভ হয়েছে');
+};
+
+window.updateExpense = async id => {
+  const amount=document.getElementById('f-amount').value;
+  const cat=document.getElementById('f-cat').value;
+  const status=document.getElementById('f-status').value;
+  const date=document.getElementById('f-date').value;
+  const notes=document.getElementById('f-notes').value;
+  const repeat=document.getElementById('f-repeat').checked;
+  if(!amount){toast('পরিমাণ দিন');return;}
+  await fsUpdate('expenses',id,{date,amount:Number(amount),category:cat,status,notes,repeat});
+  closeSheet(); toast('✅ আপডেট হয়েছে');
+};
+
+window.toggleExpStatus = async (id,curStatus,cat,amount,date,notes) => {
+  const map={Done:'Scheduled',Scheduled:'Done',TBD:'Done'};
+  const next=map[curStatus]||'Done';
+  await fsUpdate('expenses',id,{status:next});
+  if(cat==='DPS'&&next==='Done') await fsAdd('savings',{month:date.slice(0,7),amount:Number(amount),source:'DPS',notes});
+  toast('✅ স্ট্যাটাস আপডেট');
+};
+
+window.toggleRepeatExpense = async (id,cur) => {
+  await fsUpdate('expenses',id,{repeat:!cur});
+  toast(!cur?'🔁 Repeat চালু হয়েছে':'Repeat বন্ধ হয়েছে');
+};
+
+window.delExpense = async id => {
+  if(!confirm('মুছে ফেলবেন?'))return;
+  await fsDel('expenses',id); toast('🗑️ মুছে গেছে');
+};
+
+// ══════════════════════════════════════════════════════════
+// CALENDAR
+// ══════════════════════════════════════════════════════════
+function renderCalendar(){
+  const m=String(calMonth+1).padStart(2,'0');
+  const prefix=`${calYear}-${m}`;
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const todayDate=new Date().getDate();
+  const isCurrent=calYear===new Date().getFullYear()&&calMonth===new Date().getMonth();
+  const dayMap={};
+  DATA.incomes.filter(i=>i.date&&i.date.startsWith(prefix)).forEach(i=>{const d=+i.date.split('-')[2];if(!dayMap[d])dayMap[d]={inc:0,exp:0};dayMap[d].inc+=Number(i.amount);});
+  DATA.expenses.filter(e=>e.date&&e.date.startsWith(prefix)).forEach(e=>{const d=+e.date.split('-')[2];if(!dayMap[d])dayMap[d]={inc:0,exp:0};dayMap[d].exp+=Number(e.amount);});
+  let cells='';
+  for(let i=0;i<firstDay;i++) cells+='<div></div>';
+  for(let d=1;d<=daysInMonth;d++){const ev=dayMap[d];const isToday=isCurrent&&d===todayDate;cells+=`<div class="cal-day${isToday?' today':ev?' has-event':''}"><span class="cal-day-num">${d}</span><div class="cal-dots">${ev&&ev.inc>0?'<div class="cal-dot" style="background:var(--green)"></div>':''}${ev&&ev.exp>0?'<div class="cal-dot" style="background:var(--red)"></div>':''}</div></div>`;}
+  const sumRows=Object.entries(dayMap).sort((a,b)=>+a[0]-+b[0]).map(([d,ev])=>`<div class="list-row"><span class="t-muted">${prefix}-${String(d).padStart(2,'0')}</span><div style="display:flex;gap:12px">${ev.inc>0?`<span class="t-green t-bold">+${fmt(ev.inc)}</span>`:''}${ev.exp>0?`<span class="t-red t-bold">-${fmt(ev.exp)}</span>`:''}</div></div>`).join('');
+  return `<div class="screen">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <button onclick="calNav(-1)" style="background:var(--card2);border:none;border-radius:10px;padding:8px 16px;color:var(--text);font-size:20px;cursor:pointer">‹</button>
+    <span style="font-weight:800;font-size:18px">${MONTHS[calMonth]} ${calYear}</span>
+    <button onclick="calNav(1)" style="background:var(--card2);border:none;border-radius:10px;padding:8px 16px;color:var(--text);font-size:20px;cursor:pointer">›</button>
+  </div>
+  <div class="card" style="padding:12px">
+    <div class="cal-grid" style="margin-bottom:6px">${['রবি','সোম','মঙ্গল','বুধ','বৃহ','শুক্র','শনি'].map(d=>`<div class="cal-day-hdr">${d}</div>`).join('')}</div>
+    <div class="cal-grid">${cells}</div>
+    <div style="display:flex;gap:14px;justify-content:center;margin-top:10px">
+      <div style="display:flex;align-items:center;gap:5px"><div class="cal-dot" style="background:var(--green)"></div><span class="t-muted">আয়</span></div>
+      <div style="display:flex;align-items:center;gap:5px"><div class="cal-dot" style="background:var(--red)"></div><span class="t-muted">খরচ</span></div>
+    </div>
+  </div>
+  ${sumRows?`<div class="card"><div style="font-weight:700;margin-bottom:8px">মাসিক সারসংক্ষেপ</div>${sumRows}</div>`:''}
+  <div style="height:80px"></div></div>`;
+}
+window.calNav=dir=>{calMonth+=dir;if(calMonth<0){calMonth=11;calYear--;}if(calMonth>11){calMonth=0;calYear++;}render();};
+
+// ══════════════════════════════════════════════════════════
+// SAVINGS
+// ══════════════════════════════════════════════════════════
+function renderSavings(){
+  const total=DATA.savings.reduce((s,i)=>s+Number(i.amount),0);
+  const byMonth={};
+  DATA.savings.forEach(s=>{if(!byMonth[s.month])byMonth[s.month]=[];byMonth[s.month].push(s);});
+  return `<div class="screen">
+  <div class="row" style="margin-bottom:16px">
+    <div><div class="t-muted">মোট সঞ্চয়</div><div style="color:var(--green);font-size:30px;font-weight:900">${fmt(total)}</div></div>
+    <button class="btn btn-sm" style="background:var(--green)" onclick="openSavingsForm()">+ সঞ্চয় যোগ</button>
+  </div>
+  ${DATA.savings.length===0?'<div class="empty"><div class="empty-emoji">🏦</div><div class="empty-text">কোনো সঞ্চয় নেই</div></div>':Object.entries(byMonth).sort((a,b)=>b[0].localeCompare(a[0])).map(([month,entries])=>`<div class="card"><div class="row" style="margin-bottom:8px"><span style="font-weight:700">${month}</span><span class="t-green t-bold">${fmt(entries.reduce((s,e)=>s+Number(e.amount),0))}</span></div>${entries.map(s=>`<div class="list-row"><div><span style="color:var(--purple);font-weight:700;font-size:12px">${s.source||''}</span>${s.notes?`<div class="t-muted">${s.notes}</div>`:''}</div><div style="display:flex;align-items:center;gap:8px"><span class="t-green t-bold">${fmt(s.amount)}</span><button onclick="delSaving('${s.id}')" style="background:var(--redSoft);border:none;border-radius:6px;padding:5px 7px;cursor:pointer;font-size:12px">🗑️</button></div></div>`).join('')}</div>`).join('')}
+  <div style="height:80px"></div></div>`;
+}
+window.openSavingsForm=()=>openSheet('সঞ্চয় যোগ করুন',`
+  <div class="form-group"><label class="form-label">মাস</label><input class="form-input" type="month" id="f-month" value="${today().slice(0,7)}"></div>
+  <div class="form-group"><label class="form-label">পরিমাণ (৳)</label><input class="form-input" type="number" id="f-amount" placeholder="০" inputmode="numeric"></div>
+  <div class="form-group"><label class="form-label">উৎস</label><input class="form-input" type="text" id="f-source" placeholder="DPS..." value="DPS"></div>
+  <div class="form-group"><label class="form-label">নোট</label><input class="form-input" type="text" id="f-notes" placeholder="বিবরণ..."></div>
+  <button class="btn" style="background:var(--green);width:100%;margin-top:6px;justify-content:center" onclick="saveSaving()">✔ সেভ করুন</button>`);
+window.saveSaving=async()=>{
+  const amount=document.getElementById('f-amount').value;
+  if(!amount){toast('পরিমাণ দিন');return;}
+  await fsAdd('savings',{month:document.getElementById('f-month').value,amount:Number(amount),source:document.getElementById('f-source').value||'DPS',notes:document.getElementById('f-notes').value});
+  closeSheet();toast('✅ সেভ হয়েছে');
+};
+window.delSaving=async id=>{if(!confirm('মুছে ফেলবেন?'))return;await fsDel('savings',id);toast('🗑️ মুছে গেছে');};
+
+// ══════════════════════════════════════════════════════════
+// LOAN
+// ══════════════════════════════════════════════════════════
+function renderLoan(){
+  const toReceive=DATA.loans.filter(l=>l.type==='give'&&l.status==='pending').reduce((s,l)=>s+Number(l.amount),0);
+  const toPay=DATA.loans.filter(l=>l.type==='take'&&l.status==='pending').reduce((s,l)=>s+Number(l.amount),0);
+  return `<div class="screen">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+    <div class="tile" style="border-color:var(--green)33"><div class="tile-emoji">📥</div><div class="tile-val t-green">${fmt(toReceive)}</div><div class="tile-label">পাবো</div></div>
+    <div class="tile" style="border-color:var(--red)33"><div class="tile-emoji">📤</div><div class="tile-val t-red">${fmt(toPay)}</div><div class="tile-label">দেবো</div></div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+    <button class="btn btn-sm" style="background:var(--accent)" onclick="openLoanForm()">+ ঋণ যোগ</button>
+  </div>
+  ${DATA.loans.length===0?'<div class="empty"><div class="empty-emoji">🤝</div><div class="empty-text">কোনো ঋণ নেই</div></div>':DATA.loans.map(l=>{
+    const isGive=l.type==='give',isDone=l.status==='settled';
+    return `<div class="card" style="opacity:${isDone?.6:1}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="flex:1">
+          <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+            <span class="badge" style="color:${isGive?'var(--green)':'var(--red)'};background:${isGive?'var(--greenSoft)':'var(--redSoft)'}">${isGive?'দিয়েছি':'নিয়েছি'}</span>
+            <span class="badge" style="color:${isDone?'var(--muted)':'var(--amber)'};background:${isDone?'#6B708022':'var(--amberSoft)'}">${isDone?'পরিশোধিত':'বাকি'}</span>
+          </div>
+          <div style="font-weight:700;font-size:15px;margin-bottom:2px">${l.person||''}</div>
+          <div style="color:${isGive?'var(--green)':'var(--red)'};font-weight:900;font-size:20px">${fmt(l.amount)}</div>
+          ${l.dueDate?`<div class="t-muted">📅 ${l.dueDate}</div>`:''}
+          ${l.notes?`<div class="t-muted">${l.notes}</div>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button onclick="editLoan('${l.id}')" style="background:var(--blueSoft);border:none;border-radius:8px;padding:8px;cursor:pointer;font-size:13px">✏️</button>
+          <button onclick="toggleLoan('${l.id}','${l.status}')" style="background:var(--greenSoft);border:none;border-radius:8px;padding:8px;cursor:pointer;font-size:13px">✓</button>
+          <button onclick="delLoan('${l.id}')" style="background:var(--redSoft);border:none;border-radius:8px;padding:8px;cursor:pointer;font-size:13px">🗑️</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('')}
+  <div style="height:80px"></div></div>`;
+}
+
+function loanFormHtml(v={}) {
+  return `
+    <div class="form-group"><label class="form-label">ব্যক্তি / প্রতিষ্ঠান</label><input class="form-input" type="text" id="f-person" placeholder="নাম..." value="${v.person||''}"></div>
+    <div class="form-group"><label class="form-label">ধরন</label><select class="form-input" id="f-type"><option value="give"${v.type==='give'?' selected':''}>দিয়েছি (পাবো)</option><option value="take"${v.type==='take'?' selected':''}>নিয়েছি (দেবো)</option></select></div>
+    <div class="form-group"><label class="form-label">পরিমাণ (৳)</label><input class="form-input" type="number" id="f-amount" placeholder="০" inputmode="numeric" value="${v.amount||''}"></div>
+    <div class="form-group"><label class="form-label">পরিশোধের তারিখ</label><input class="form-input" type="date" id="f-due" value="${v.dueDate||''}"></div>
+    <div class="form-group"><label class="form-label">নোট</label><input class="form-input" type="text" id="f-notes" placeholder="বিবরণ..." value="${v.notes||''}"></div>`;
+}
+
+window.openLoanForm=()=>openSheet('ঋণ যোগ করুন',loanFormHtml()+`<button class="btn" style="background:var(--accent);width:100%;justify-content:center" onclick="saveLoan()">✔ সেভ করুন</button>`);
+window.editLoan=id=>{const l=DATA.loans.find(x=>x.id===id);if(!l)return;openSheet('ঋণ এডিট করুন',loanFormHtml(l)+`<button class="btn" style="background:var(--blue);width:100%;justify-content:center" onclick="updateLoan('${id}')">✔ আপডেট করুন</button>`);};
+window.saveLoan=async()=>{const p=document.getElementById('f-person').value,a=document.getElementById('f-amount').value;if(!p||!a){toast('নাম ও পরিমাণ দিন');return;}await fsAdd('loans',{person:p,type:document.getElementById('f-type').value,amount:Number(a),dueDate:document.getElementById('f-due').value,notes:document.getElementById('f-notes').value,status:'pending'});closeSheet();toast('✅ সেভ হয়েছে');};
+window.updateLoan=async id=>{const p=document.getElementById('f-person').value,a=document.getElementById('f-amount').value;if(!p||!a){toast('নাম ও পরিমাণ দিন');return;}await fsUpdate('loans',id,{person:p,type:document.getElementById('f-type').value,amount:Number(a),dueDate:document.getElementById('f-due').value,notes:document.getElementById('f-notes').value});closeSheet();toast('✅ আপডেট হয়েছে');};
+window.toggleLoan=async(id,cur)=>{await fsUpdate('loans',id,{status:cur==='settled'?'pending':'settled'});toast('✅ আপডেট হয়েছে');};
+window.delLoan=async id=>{if(!confirm('মুছে ফেলবেন?'))return;await fsDel('loans',id);toast('🗑️ মুছে গেছে');};
+
+// ══════════════════════════════════════════════════════════
+// PROJECTS
+// ══════════════════════════════════════════════════════════
+function renderProjects(){
+  return `<div class="screen">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <span style="font-weight:800;font-size:16px">প্রজেক্টসমূহ</span>
+    <button class="btn btn-sm" style="background:var(--accent)" onclick="openProjectForm()">+ নতুন প্রজেক্ট</button>
+  </div>
+  ${DATA.projects.length===0?'<div class="empty"><div class="empty-emoji">📁</div><div class="empty-text">কোনো প্রজেক্ট নেই</div></div>':DATA.projects.map(p=>{
+    const entries=p.entries||[];
+    const out=entries.filter(e=>e.flow==='out').reduce((s,e)=>s+Number(e.amount),0);
+    const inn=entries.filter(e=>e.flow==='in').reduce((s,e)=>s+Number(e.amount),0);
+    const pct=p.budget?Math.min(100,(out/Number(p.budget))*100):0;
+    const bc=pct>90?'var(--red)':pct>70?'var(--amber)':'var(--accent)';
+    return `<div class="card">
+      <div onclick="openProject('${p.id}')" style="cursor:pointer">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-weight:700;font-size:15px">${p.name||''}</span><span class="badge" style="color:${p.status==='active'?'var(--green)':'var(--muted)'};background:${p.status==='active'?'var(--greenSoft)':'#6B708022'}">${p.status==='active'?'সক্রিয়':'বন্ধ'}</span></div>
+        ${p.budget?`<div class="t-muted" style="margin-bottom:8px">বাজেট: ${fmt(p.budget)}</div>`:''}
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px"><span class="t-green">আয়: ${fmt(inn)}</span><span class="t-red">ব্যয়: ${fmt(out)}</span></div>
+        ${p.budget?`<div class="bar-bg"><div class="bar-fill" style="background:${bc};width:${pct}%"></div></div>`:''}
+      </div>
+      <div class="action-row" style="margin-top:10px">
+        <button class="act-btn" style="background:var(--blueSoft);color:var(--blue)" onclick="editProject('${p.id}')">✏️ এডিট</button>
+        <button class="act-btn" style="background:var(--redSoft);color:var(--red)" onclick="delProject('${p.id}')">🗑️ মুছুন</button>
+      </div>
+    </div>`;
+  }).join('')}
+  <div style="height:80px"></div></div>`;
+}
+
+window.openProject=id=>{currentProjectId=id;render();};
+window.backToProjects=()=>{currentProjectId=null;render();};
+
+function renderProjectDetail(){
+  const p=DATA.projects.find(p=>p.id===currentProjectId);
+  if(!p){currentProjectId=null;render();return '';}
+  const entries=p.entries||[];
+  const out=entries.filter(e=>e.flow==='out').reduce((s,e)=>s+Number(e.amount),0);
+  const inn=entries.filter(e=>e.flow==='in').reduce((s,e)=>s+Number(e.amount),0);
+  const pct=p.budget?Math.min(100,(out/Number(p.budget))*100):0;
+  const bc=pct>90?'var(--red)':pct>70?'var(--amber)':'var(--green)';
+  return `<div class="screen">
+  <button onclick="backToProjects()" style="background:var(--card2);border:none;border-radius:10px;padding:8px 14px;color:var(--muted);cursor:pointer;margin-bottom:14px;font-family:inherit;font-size:13px;font-weight:600">← পিছনে</button>
+  <div class="card" style="background:linear-gradient(135deg,#F9731615,var(--card))">
+    <div style="font-weight:800;font-size:20px;margin-bottom:4px">${p.name||''}</div>
+    ${p.deadline?`<div class="t-muted">শেষ তারিখ: ${p.deadline}</div>`:''}
+    ${p.budget?`<div class="row" style="margin:12px 0 4px"><span class="t-muted">বাজেট ব্যবহার</span><span style="font-weight:700">${fmt(out)} / ${fmt(p.budget)}</span></div><div class="bar-bg"><div class="bar-fill" style="background:${bc};width:${pct}%"></div></div>`:''}
+    <div class="proj-stats">
+      <div class="proj-stat" style="background:var(--greenSoft)"><div style="color:var(--muted);font-size:10px;font-weight:700">প্রাপ্ত</div><div style="color:var(--green);font-weight:800;font-size:18px">${fmt(inn)}</div></div>
+      <div class="proj-stat" style="background:var(--redSoft)"><div style="color:var(--muted);font-size:10px;font-weight:700">ব্যয়</div><div style="color:var(--red);font-weight:800;font-size:18px">${fmt(out)}</div></div>
+    </div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+    <button class="btn btn-sm" style="background:var(--accent)" onclick="openEntryForm()">+ এন্ট্রি যোগ</button>
+  </div>
+  ${entries.length===0?'<div class="empty"><div class="empty-emoji">📝</div><div class="empty-text">কোনো এন্ট্রি নেই</div></div>':[...entries].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(ent=>`
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><div style="font-weight:600;font-size:13px">${ent.label||''}</div><div class="t-muted">${ent.date||''}</div></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="color:${ent.flow==='in'?'var(--green)':'var(--red)'};font-weight:800;font-size:17px">${ent.flow==='in'?'+':'-'}${fmt(ent.amount)}</span>
+          <button onclick="editEntry('${ent.id}')" style="background:var(--blueSoft);border:none;border-radius:6px;padding:6px;cursor:pointer;font-size:12px">✏️</button>
+          <button onclick="delEntry('${ent.id}')" style="background:var(--redSoft);border:none;border-radius:6px;padding:6px;cursor:pointer;font-size:12px">🗑️</button>
+        </div>
+      </div>
+    </div>`).join('')}
+  <div style="height:80px"></div></div>`;
+}
+
+function projectFormHtml(v={}) {
+  return `
+    <div class="form-group"><label class="form-label">প্রজেক্টের নাম</label><input class="form-input" type="text" id="f-name" placeholder="বাড়ি সংস্কার..." value="${v.name||''}"></div>
+    <div class="form-group"><label class="form-label">বাজেট (৳)</label><input class="form-input" type="number" id="f-budget" placeholder="০" inputmode="numeric" value="${v.budget||''}"></div>
+    <div class="form-group"><label class="form-label">শেষ তারিখ</label><input class="form-input" type="date" id="f-deadline" value="${v.deadline||''}"></div>`;
+}
+
+window.openProjectForm=()=>openSheet('নতুন প্রজেক্ট',projectFormHtml()+`<button class="btn" style="background:var(--accent);width:100%;justify-content:center" onclick="saveProject()">✔ তৈরি করুন</button>`);
+window.editProject=id=>{const p=DATA.projects.find(x=>x.id===id);if(!p)return;openSheet('প্রজেক্ট এডিট',projectFormHtml(p)+`<button class="btn" style="background:var(--blue);width:100%;justify-content:center" onclick="updateProject('${id}')">✔ আপডেট করুন</button>`);};
+window.saveProject=async()=>{const name=document.getElementById('f-name').value;if(!name){toast('নাম দিন');return;}await fsAdd('projects',{name,budget:document.getElementById('f-budget').value,deadline:document.getElementById('f-deadline').value,status:'active',entries:[]});closeSheet();toast('✅ প্রজেক্ট তৈরি হয়েছে');};
+window.updateProject=async id=>{const name=document.getElementById('f-name').value;if(!name){toast('নাম দিন');return;}await fsUpdate('projects',id,{name,budget:document.getElementById('f-budget').value,deadline:document.getElementById('f-deadline').value});closeSheet();toast('✅ আপডেট হয়েছে');};
+window.delProject=async id=>{if(!confirm('প্রজেক্ট মুছে ফেলবেন?'))return;await fsDel('projects',id);toast('🗑️ মুছে গেছে');};
+
+function entryFormHtml(v={}) {
+  return `
+    <div class="form-group"><label class="form-label">তারিখ</label><input class="form-input" type="date" id="f-date" value="${v.date||today()}"></div>
+    <div class="form-group"><label class="form-label">বিষয়</label><input class="form-input" type="text" id="f-label" placeholder="কিসের জন্য?" value="${v.label||''}"></div>
+    <div class="form-group"><label class="form-label">পরিমাণ (৳)</label><input class="form-input" type="number" id="f-amount" placeholder="০" inputmode="numeric" value="${v.amount||''}"></div>
+    <div class="form-group"><label class="form-label">ধরন</label><select class="form-input" id="f-flow"><option value="out"${v.flow==='out'?' selected':''}>ব্যয় (বের হয়েছে)</option><option value="in"${v.flow==='in'?' selected':''}>প্রাপ্তি (এসেছে)</option></select></div>`;
+}
+
+window.openEntryForm=()=>openSheet('এন্ট্রি যোগ',entryFormHtml()+`<button class="btn" style="background:var(--accent);width:100%;justify-content:center" onclick="saveEntry()">✔ সেভ করুন</button>`);
+window.editEntry=id=>{const p=DATA.projects.find(p=>p.id===currentProjectId);if(!p)return;const ent=(p.entries||[]).find(e=>e.id===id);if(!ent)return;openSheet('এন্ট্রি এডিট',entryFormHtml(ent)+`<button class="btn" style="background:var(--blue);width:100%;justify-content:center" onclick="updateEntry('${id}')">✔ আপডেট করুন</button>`);};
+
+window.saveEntry=async()=>{
+  const label=document.getElementById('f-label').value,amount=document.getElementById('f-amount').value;
+  if(!label||!amount){toast('বিষয় ও পরিমাণ দিন');return;}
+  const p=DATA.projects.find(p=>p.id===currentProjectId);if(!p)return;
+  const newEntry={id:uid(),date:document.getElementById('f-date').value,label,amount:Number(amount),flow:document.getElementById('f-flow').value};
+  await fsUpdate('projects',currentProjectId,{entries:[...(p.entries||[]),newEntry]});
+  closeSheet();toast('✅ এন্ট্রি যোগ হয়েছে');
+};
+window.updateEntry=async entId=>{
+  const label=document.getElementById('f-label').value,amount=document.getElementById('f-amount').value;
+  if(!label||!amount){toast('বিষয় ও পরিমাণ দিন');return;}
+  const p=DATA.projects.find(p=>p.id===currentProjectId);if(!p)return;
+  const entries=(p.entries||[]).map(e=>e.id===entId?{...e,date:document.getElementById('f-date').value,label,amount:Number(amount),flow:document.getElementById('f-flow').value}:e);
+  await fsUpdate('projects',currentProjectId,{entries});
+  closeSheet();toast('✅ আপডেট হয়েছে');
+};
+window.delEntry=async entId=>{
+  if(!confirm('মুছে ফেলবেন?'))return;
+  const p=DATA.projects.find(p=>p.id===currentProjectId);if(!p)return;
+  await fsUpdate('projects',currentProjectId,{entries:(p.entries||[]).filter(e=>e.id!==entId)});
+  toast('🗑️ মুছে গেছে');
+};
+
+</script>
+
+// ══════════════════════════════════════════════════════════
+// CATEGORY MANAGER
+// ══════════════════════════════════════════════════════════
+const COLOR_PALETTE = [
+  '#F43F5E','#F97316','#F59E0B','#22C55E','#14B8A6',
+  '#38BDF8','#3B82F6','#A78BFA','#8B5CF6','#EC4899',
+  '#6B7080','#84CC16','#06B6D4','#EF4444','#10B981'
+];
+
+window.openCatManager = () => {
+  renderCatManagerSheet();
+};
+
+function renderCatManagerSheet() {
+  const rows = CATS.map((cat, idx) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="width:14px;height:14px;border-radius:50%;background:${getCatColor(cat)};flex-shrink:0"></div>
+      <span style="flex:1;font-weight:600">${cat}</span>
+      <button onclick="openEditCat(${idx})" style="background:var(--blueSoft);border:none;border-radius:7px;padding:5px 8px;cursor:pointer;font-size:12px;color:var(--blue)">✏️</button>
+      ${CATS.length > 1 ? `<button onclick="deleteCat(${idx})" style="background:var(--redSoft);border:none;border-radius:7px;padding:5px 8px;cursor:pointer;font-size:12px;color:var(--red)">🗑️</button>` : ''}
+    </div>`).join('');
+
+  openSheet('⚙️ ক্যাটাগরি ম্যানেজ করুন', `
+    <div style="margin-bottom:14px">${rows}</div>
+    <div style="background:var(--accentSoft);border-radius:12px;padding:14px;margin-bottom:14px">
+      <div class="form-label" style="margin-bottom:8px">নতুন ক্যাটাগরি যোগ করুন</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input class="form-input" type="text" id="new-cat-name" placeholder="ক্যাটাগরির নাম..." style="flex:1">
+      </div>
+      <div style="margin-bottom:10px">
+        <div class="form-label">রঙ বেছে নিন</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px" id="color-picker">
+          ${COLOR_PALETTE.map(c => `<div onclick="selectNewCatColor('${c}')" id="cp-${c.slice(1)}" style="width:28px;height:28px;border-radius:50%;background:${c};cursor:pointer;border:2px solid transparent;transition:transform .15s" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"></div>`).join('')}
+        </div>
+      </div>
+      <button class="btn" style="background:var(--accent);width:100%;justify-content:center" onclick="addNewCat()">+ ক্যাটাগরি যোগ করুন</button>
+    </div>
+    <div style="color:var(--muted);font-size:11px;text-align:center">পরিবর্তন সব ডিভাইসে sync হবে</div>
+  `);
+  // Set default selected color
+  window._newCatColor = COLOR_PALETTE[0];
+  selectNewCatColor(COLOR_PALETTE[0]);
+}
+
+window.selectNewCatColor = (color) => {
+  window._newCatColor = color;
+  document.querySelectorAll('[id^="cp-"]').forEach(el => el.style.border = '2px solid transparent');
+  const el = document.getElementById('cp-' + color.slice(1));
+  if (el) el.style.border = '3px solid #fff';
+};
+
+window.addNewCat = async () => {
+  const name = document.getElementById('new-cat-name').value.trim();
+  if (!name) { toast('ক্যাটাগরির নাম দিন'); return; }
+  if (CATS.includes(name)) { toast('এই নামে ক্যাটাগরি আছে'); return; }
+  CATS.push(name);
+  CAT_COLORS[name] = window._newCatColor || '#6B7080';
+  await saveCategories();
+  closeSheet();
+  render();
+};
+
+window.openEditCat = (idx) => {
+  const cat = CATS[idx];
+  const color = getCatColor(cat);
+  openSheet(`"${cat}" এডিট করুন`, `
+    <div class="form-group">
+      <label class="form-label">নতুন নাম</label>
+      <input class="form-input" type="text" id="edit-cat-name" value="${cat}">
+    </div>
+    <div class="form-group">
+      <label class="form-label">রঙ বেছে নিন</label>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px" id="edit-color-picker">
+        ${COLOR_PALETTE.map(c => `<div onclick="selectEditCatColor('${c}')" id="ecp-${c.slice(1)}" style="width:28px;height:28px;border-radius:50%;background:${c};cursor:pointer;border:${c===color?'3px solid #fff':'2px solid transparent'};transition:transform .15s"></div>`).join('')}
+      </div>
+    </div>
+    <button class="btn" style="background:var(--blue);width:100%;justify-content:center;margin-top:8px" onclick="updateCat(${idx})">✔ আপডেট করুন</button>
+  `);
+  window._editCatColor = color;
+};
+
+window.selectEditCatColor = (color) => {
+  window._editCatColor = color;
+  document.querySelectorAll('[id^="ecp-"]').forEach(el => el.style.border = '2px solid transparent');
+  const el = document.getElementById('ecp-' + color.slice(1));
+  if (el) el.style.border = '3px solid #fff';
+};
+
+window.updateCat = async (idx) => {
+  const oldName = CATS[idx];
+  const newName = document.getElementById('edit-cat-name').value.trim();
+  if (!newName) { toast('নাম দিন'); return; }
+  const newColor = window._editCatColor || getCatColor(oldName);
+  // Update name
+  CATS[idx] = newName;
+  // Update colors
+  delete CAT_COLORS[oldName];
+  CAT_COLORS[newName] = newColor;
+  await saveCategories();
+  closeSheet();
+  render();
+  toast('✅ আপডেট হয়েছে');
+};
+
+window.deleteCat = async (idx) => {
+  const cat = CATS[idx];
+  if (!confirm(`"${cat}" ক্যাটাগরি মুছে ফেলবেন?`)) return;
+  delete CAT_COLORS[cat];
+  CATS.splice(idx, 1);
+  await saveCategories();
+  closeSheet();
+  render();
+  toast('🗑️ মুছে গেছে');
+};
+
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}</script>
+</body>
+</html>
