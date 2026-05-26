@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
-  <rect width="192" height="192" rx="42" fill="#0F1117"/>
-  <rect x="16" y="16" width="160" height="160" rx="30" fill="#1A1D27"/>
-  <text x="96" y="82" font-family="serif" font-size="52" font-weight="bold" fill="#F97316" text-anchor="middle">হাল</text>
-  <text x="96" y="138" font-family="serif" font-size="40" font-weight="bold" fill="#E8EAF6" text-anchor="middle">খাতা</text>
-  <rect x="30" y="150" width="132" height="3" rx="2" fill="#F97316" opacity="0.6"/>
-</svg>
